@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+    http-equiv="Content-Security-Policy"
+    content="script-src 'self' 'unsafe-inline'"
+    />
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="css/style.css" />
+    <title>SystemMontitor - CPU & System Stats</title>
+  </head>
+  <body>
+    <div id="navbar"><span id="exit">X</span></div>
+    <main>
+      <div class="content show pages">
+        <h1><i class="fas fa-microchip"></i> CPU</h1>
+        <table id="cpuTable">
+          <tr>
+            <td colspan=2>
+              <span id="cpu-model"></span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <strong>V-Cores: </strong>
+            </td>
+            <td>
+              <span id="cpu-vcores"></span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <strong>Usage: </strong>
+            </td>
+            <td>
+              <span id="cpu-usage">0.00%</span>
+            </td>
+          </tr>
+          <tr>
+            <td colspan=2>
+              <span style="left: 47%; right: 53%;position:fixed; text-align: center;" id="cpu-percent">100%</span>
+              <div class="progress-bar">
+                <div class="progress" id="cpu-progress">
+                </div>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="content pages">
+        <h1><i class="fas fa-info"></i> System Info</h1>
+        <table>
+          <th colspan=2>OS</th>
+          <tr>
+            <td>
+              <strong>Computer Name: </strong>
+            </td>
+            <td>
+              <span id="comp-name">loading...</span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <strong>OS: </strong>
+            </td>
+            <td>
+              <span id="os">loading...</span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <strong>IP: </strong>
+            </td>
+            <td>
+              <span id="machine-ip">loading...</span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <strong>System Uptime: </strong>
+            </td>
+            <td>
+              <span id="sys-uptime">loading...</span>
+            </td>
+          </tr>
+          <th colspan=2>Memory</th>
+          <tr>
+            <td>
+              <strong>System Memory Total: </strong>
+            </td>
+            <td>
+              <span id="mem-total">loading...</span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <strong>System Memory Used: </strong>
+            </td>
+            <td>
+              <span id="mem-used">loading...</span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <strong>System Memory Free: </strong>
+            </td>
+            <td>
+              <span id="mem-free">loading...</span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <strong>System Memory Free: </strong>
+            </td>
+            <td colspan=2>
+              <div class="progress-bar">
+                <div class="progress" id="mem-free-percent">
+                  100%
+                </div>
+              </div>
+              
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="content pages">
+        <h1><i class="fas fa-cog"></i> Settings</h1>
+        <div id="alert" class="hide"></div>
+        <form id="settings-form">
+          <div class="form-control">
+            <label for="cpu-overload">CPU overload warning %</label>
+            <input type="number" id="cpu-overload" />
+          </div>
+          <div class="form-control">
+            <label for="alert-frequency">Alert frequency (in minutes)</label>
+            <input type="number" id="alert-frequency" />
+          </div>
+          <input type="submit" value="Save" class="btn" />
+        </form>
+      </div>
+    </main>
+    <nav id="nav">
+      <ul>
+        <li>
+          <i class="fas fa-microchip"></i>
+          <p>CPU</p>
+        </li>
+        <li>
+          <i class="fas fa-info"></i>
+          <p>System Info</p>
+        </li>
+        <li>
+          <i class="fas fa-cog"></i>
+          <p>Settings</p>
+        </li>
+      </ul>
+    </nav>
+    <script src="js/tabs.js"></script>
+    <script src="js/monitor.js"></script>
+    <script>
+    const settingsForm = document.getElementById('settings-form')
+    const nav = document.getElementById('nav')
+    // get settings
+    ipcRenderer.on('settings:get', (e, settings) => {
+    document.getElementById('cpu-overload').value = +settings.cpuOverload
+    document.getElementById('alert-frequency').value = +settings.alertFrequency
+    })
+    // add listener to submit to get setting values
+    settingsForm.addEventListener('submit', e => {
+    e.preventDefault()
+    const cpuOverload = document.getElementById('cpu-overload').value
+    const alertFrequency = document.getElementById('alert-frequency').value
+    // set settings (send it to the main.html)
+    ipcRenderer.send('settings:set', {
+    cpuOverload,
+    alertFrequency,
+    })
+    showAlert('Settings Saved')
+    })
+    function showAlert(msg) {
+    const alert = document.getElementById('alert')
+    alert.classList.remove('hide')
+    alert.classList.add('alert')
+    alert.innerText = msg
+    // remove after 5 sec
+    setTimeout(() => alert.classList.add('hide'), 5000)
+    }
+    // Toggle nav
+    ipcRenderer.on('nav:toggle', () => {
+    nav.classList.toggle('hide')
+    })
+    </script>
+  </body>
+</html>
